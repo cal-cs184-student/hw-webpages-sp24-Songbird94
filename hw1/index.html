@@ -1,7 +1,187 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 1 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184/284A Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
+<h1 align="middle">Homework 1: Rasterizer</h1>
+<h2 align="middle">Xiaoru Zhao</h2>
+
+<br><br>
+
+    <div>
+
+        <h2 align="middle">Overview</h2>
+        <p>
+            In this project I implemented basic rasterization, antialiasing methods like supersampling, and texture mapping using bilinear interpolation and mipmaps, etc. In doing so we are able to render and process graphics with different qualities. Some parts of the project are pretty intuitive while some are quite challenging to me. But at last it's really satisfying to see a file rendered successfully.
+        </p>
+
+        <h2 align="middle">Section I: Rasterization</h2>
+
+        <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+
+        <p>
+            Checks whether a sample is inside the triangle. If so, the pixel gets rendered. The algorithm is no worse that one that checks each sample within the bounding box of the triangle because the samples are bounded by the maximum and minimum values of x and y coordinates, and we iterate through the samples within the bound.
+
+        </p>
+
+        <img src="rasterize-1.png" align="middle" width="400px" />
+        <figcaption align="middle">basic/test4.svg default</figcaption>
+
+
+
+
+
+        <h3 align="middle">Part 2: Antialiasing triangles</h3>
+
+        <p>
+            Resized the buffer to be sample_rate times larger. Perform rasterization on sub-pixels that are divided by the sample rate and fill all the sub-pixels if in the triangle. And we take the average of values in the end when resolving to frame buffer from the sample buffer. It can be seen from the images that with higher sample rate the sharp edges are blurred and there is less jaggies.
+        </p>
+
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="rasterize-1.png" align="middle" width="400px" />
+                        <figcaption align="middle">basic/test4.svg sample rate 1</figcaption>
+                    </td>
+                    <td>
+                        <img src="rasterize-2.png" align="middle" width="400px" />
+                        <figcaption align="middle">sample rate 4</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="rasterize-4.png" align="middle" width="400px" />
+                        <figcaption align="middle">sample rate 16</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+
+
+
+        <h3 align="middle">Part 3: Transforms</h3>
+
+        <p>
+            My robot is jumping in the air in excitement. In order to do so I rotated their legs and also moved the right leg up and a bit to the right from the original location.
+        </p>
+        <img src="robot.png" align="middle" width="400px" />
+        <figcaption align="middle">cubeman</figcaption>
+
+
+
+        <h2 align="middle">Section II: Sampling</h2>
+
+        <h3 align="middle">Part 4: Barycentric coordinates</h3>
+        <p>
+            Barycentric coordinates are a way to represent points within a triangle in terms of the relative positions to the triangle's vertices. The coordinates are weighted corresponding to their distance to the vertices. For example, a point has the barycentric coordinates (a,b,c) which are the relative location to the verticies of the triangle (A,B,C), then the value at the point could be aA+bB+cC.
+            By setting the vertices of a triangle to different colors it's easy to show how barycentric coordinates behave:
+        </p>
+
+        <img src="colored_triangle.png" align="middle" width="400px" />
+        <figcaption align="middle"></figcaption>
+        <p>And here's test7 rendered, showing a color wheel:</p>
+        <img src="test7.png" align="middle" width="400px" />
+        <figcaption align="middle">svg/basic/test7.svg</figcaption>
+
+
+        <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+        <p>
+            Determining the texture based on the information available at specific sample points within the pixel. Nearest_neighbor simply takes the nearst texture pixel that the point maps to. While bilinear interpolation takes the surrounding texture pixels and perform a weighted calculation. Here's the rendering of test5 with different sampling method and sampling rate:
+        </p>
+
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="nearest-1.png" align="middle" width="400px" />
+                        <figcaption align="middle">texmap/test5.svg nearest sampling: sample rate 1</figcaption>
+                    </td>
+                    <td>
+                        <img src="bi-1.png" align="middle" width="400px" />
+                        <figcaption align="middle">bilinear: sample rate 1</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="nearest-16.png" align="middle" width="400px" />
+                        <figcaption align="middle">nearest sampling: sample rate 16</figcaption>
+                    </td>
+                    <td>
+                        <img src="bi-16.png" align="middle" width="400px" />
+                        <figcaption align="middle">bilinear: sample rate 16</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <p>
+            It seems that bilinear sampling renders a better graphic and is less jagged. The edges are also overall softer with higher sample rates. Bilinear interpolation takes more details into consideration while nearest_neighbor is more straightforward and sharper.
+        </p>
+
+        <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+        <p>
+            In order to preserve the details of one image we downsample it until we get 1*1 texture pixel which leads to mipmap levels, and then sample from there. Here's a png file of mine and how it appears to differ through different levels.
+        </p>
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="zero-nearest.png" align="middle" width="400px" />
+                        <figcaption align="middle">L_ZERO+P_NEAREST</figcaption>
+                    </td>
+                    <td>
+                        <img src="zero-linear.png" align="middle" width="400px" />
+                        <figcaption align="middle">ZERO+LINEAR</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="nearest-nearest.png" align="middle" width="400px" />
+                        <figcaption align="middle">NEAREST+NEAREST</figcaption>
+                    </td>
+                    <td>
+                        <img src="nearest-linear.png" align="middle" width="400px" />
+                        <figcaption align="middle">NEAREST+LINEAR</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <p>
+            With a downsampled texture such as the nearest level the edges are smoother than those of zero level.
+            Among the three techniques (pixel sampling, level sampling and number of samples per pixel), pixel sampling appears to be the fastest while supersampling is the slowest. Supersampling also takes more memory than the other two since it needs to store all the supersampled results, while pixel sampling takes the least memory because it's using the original texture. Supersampling also has the most antialiasing power. Level sampling is sort of in the middle with everything.
+        </p>
+
+        <h2 align="middle">Section III: Art Competition</h2>
+        <p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+        <h3 align="middle">Part 7: Draw something interesting!</h3>
+
+    </div></body>
 </html>
